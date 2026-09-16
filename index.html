@@ -112,7 +112,7 @@
       flex: 1;
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 36px; /* 主隊與客隊實體空隙 36px，防按鈕黏在一起 */
+      gap: 36px;
       min-height: 0;
     }
 
@@ -143,10 +143,12 @@
       align-items: center;
       justify-content: center;
       min-height: 0;
+      overflow: hidden;
     }
 
+    /* 分數字體加大至 36vh */
     .score-text {
-      font-size: 22vh;
+      font-size: 36vh;
       font-weight: 900;
       line-height: 1;
     }
@@ -159,7 +161,7 @@
       display: grid;
       grid-template-columns: repeat(4, 1fr);
       gap: 10px;
-      height: 80px; /* 固定高度，手感極佳 */
+      height: 80px;
       flex-shrink: 0;
     }
 
