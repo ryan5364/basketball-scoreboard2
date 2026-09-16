@@ -2,20 +2,16 @@
 <html lang="zh-TW">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="籃球記分板">
-  <title>籃球比賽記分板</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>籃球計分板</title>
   <style>
     :root {
-      --bg: #000000;
-      --card-bg: #121212;
-      --border: #333333;
-      --yellow: #ffcc00;
-      --red: #ff3b30;
-      --blue: #0a84ff;
-      --green: #34c759;
+      --bg-color: #0f172a;
+      --card-a-bg: #1e293b;
+      --card-b-bg: #1e293b;
+      --text-a: #38bdf8;
+      --text-b: #f43f5e;
+      --accent: #f59e0b;
     }
 
     * {
@@ -24,618 +20,216 @@
       padding: 0;
       user-select: none;
       -webkit-user-select: none;
+      touch-action: manipulation;
     }
 
-    html, body {
-      width: 100vw;
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background-color: var(--bg-color);
+      color: #fff;
       height: 100vh;
-      background-color: var(--bg);
-      color: #ffffff;
-      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "PingFang TC", sans-serif;
+      width: 100vw;
       overflow: hidden;
-    }
-
-    .app {
       display: flex;
       flex-direction: column;
-      width: 100vw;
-      height: 100vh;
-      padding: 12px 16px;
-      gap: 10px;
     }
 
-    /* 頂部導覽列 */
+    /* 頂部控制列 */
     header {
+      height: 50px;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      height: 36px;
-      flex-shrink: 0;
+      padding: 0 16px;
+      background: rgba(15, 23, 42, 0.8);
+      backdrop-filter: blur(8px);
+      z-index: 10;
     }
 
-    .title {
-      color: var(--yellow);
-      font-size: 1.2rem;
-      font-weight: bold;
-    }
-
-    .nav-ctrls {
-      display: flex;
-      gap: 10px;
-    }
-
-    .nav-btn {
-      background: #222;
-      border: 1px solid #444;
+    .btn {
+      background: #334155;
       color: #fff;
-      padding: 6px 14px;
+      border: none;
+      padding: 8px 16px;
       border-radius: 6px;
-      font-size: 0.9rem;
-      font-weight: bold;
+      font-size: 14px;
+      font-weight: 600;
       cursor: pointer;
     }
 
-    /* 中央計時區 */
-    .timer-box {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      flex-shrink: 0;
+    .btn:active {
+      opacity: 0.8;
     }
 
-    .timer-text {
-      font-family: "SF Pro Text", monospace;
-      font-size: 14vh;
-      font-weight: 900;
-      color: var(--yellow);
-      line-height: 1;
-    }
-
-    .timer-ctrls {
-      display: flex;
-      gap: 16px;
-      margin-top: 6px;
-    }
-
-    .ctrl-btn {
-      width: 110px;
-      height: 40px;
-      border: none;
-      border-radius: 8px;
-      font-size: 1.1rem;
-      font-weight: bold;
-      color: #fff;
-      cursor: pointer;
-    }
-
-    .btn-start { background-color: var(--green); }
-    .btn-reset { background-color: var(--red); }
-
-    /* 記分與按鈕主區 */
-    .scoreboard {
+    /* 主計分區塊 */
+    main {
       flex: 1;
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 36px;
-      min-height: 0;
-    }
-
-    .team-col {
       display: flex;
-      flex-direction: column;
-      height: 100%;
-      gap: 8px;
-    }
-
-    .team-name {
-      font-size: 1.4rem;
-      font-weight: bold;
-      text-align: center;
-      flex-shrink: 0;
-    }
-
-    .name-home { color: var(--red); }
-    .name-guest { color: var(--blue); }
-
-    /* 分數大框 (保留位置與外框) */
-    .score-display {
-      flex: 1;
-      background: #000;
-      border: 2px solid var(--border);
-      border-radius: 12px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      min-height: 0;
-      overflow: hidden;
-      position: relative;
-    }
-
-    /* 分數字體 50vh */
-    .score-text {
-      font-size: 50vh;
-      font-weight: 900;
-      line-height: 0.8;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .score-home { color: var(--red); }
-    .score-guest { color: var(--blue); }
-
-    /* 底部加減按鈕區 */
-    .btn-group {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 10px;
-      height: 80px;
-      flex-shrink: 0;
-    }
-
-    .btn-point {
-      background: #1c1c1e;
-      border: 1.5px solid #3a3a3c;
-      border-radius: 10px;
-      font-size: 2rem;
-      font-weight: 900;
-      color: #ffffff;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .btn-point:active, .ctrl-btn:active, .nav-btn:active, .test-sound-btn:active {
-      opacity: 0.5;
-      transform: scale(0.96);
-    }
-
-    /* 設定彈出視窗 (Modal) */
-    .modal-overlay {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100vw;
-      height: 100vh;
-      background: rgba(0, 0, 0, 0.8);
-      display: none;
-      align-items: center;
-      justify-content: center;
-      z-index: 999;
-      backdrop-filter: blur(4px);
-    }
-
-    .modal-content {
-      background: #1c1c1e;
-      border: 1px solid #3a3a3c;
-      border-radius: 16px;
-      width: 480px;
-      padding: 24px;
-      display: flex;
-      flex-direction: column;
-      gap: 16px;
-    }
-
-    .modal-title {
-      font-size: 1.3rem;
-      font-weight: bold;
-      color: var(--yellow);
-      text-align: center;
-      margin-bottom: 4px;
-    }
-
-    .setting-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      font-size: 1.05rem;
-      font-weight: bold;
-    }
-
-    .setting-right {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .setting-select {
-      background: #2c2c2e;
-      border: 1px solid #48484a;
-      color: #fff;
-      padding: 6px 10px;
-      border-radius: 8px;
-      font-size: 0.95rem;
-      font-weight: bold;
-      outline: none;
-    }
-
-    .stepper {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-
-    .step-btn {
-      width: 38px;
-      height: 38px;
-      background: #2c2c2e;
-      border: 1px solid #48484a;
-      color: white;
-      border-radius: 8px;
-      font-size: 1.3rem;
-      font-weight: bold;
-      cursor: pointer;
-    }
-
-    .step-value {
-      font-size: 1.2rem;
-      color: var(--yellow);
-      min-width: 40px;
-      text-align: center;
-    }
-
-    .toggle-checkbox {
-      width: 22px;
-      height: 22px;
-      accent-color: var(--yellow);
-      cursor: pointer;
-    }
-
-    .test-sound-btn {
-      background: #2c2c2e;
-      border: 1px solid #48484a;
-      color: var(--yellow);
-      padding: 6px 10px;
-      border-radius: 8px;
-      font-size: 0.85rem;
-      font-weight: bold;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 4px;
-    }
-
-    .modal-save-btn {
       width: 100%;
-      height: 44px;
-      background: var(--yellow);
-      border: none;
-      border-radius: 8px;
-      color: #000;
-      font-size: 1.1rem;
-      font-weight: 900;
+      height: calc(100vh - 50px);
+    }
+
+    .team-card {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      position: relative;
       cursor: pointer;
-      margin-top: 8px;
+    }
+
+    .team-a {
+      background-color: var(--card-a-bg);
+      border-right: 2px solid #0f172a;
+    }
+
+    .team-b {
+      background-color: var(--card-b-bg);
+    }
+
+    .score {
+      font-family: 'Impact', 'Arial Black', sans-serif;
+      font-weight: bold;
+      line-height: 1;
+      text-shadow: 0 4px 12px rgba(0,0,0,0.5);
+    }
+
+    .team-a .score {
+      color: var(--text-a);
+    }
+
+    .team-b .score {
+      color: var(--text-b);
+    }
+
+    /* 直屏設定 (Portrait) */
+    @media (orientation: portrait) {
+      main {
+        flex-direction: column;
+      }
+      .team-a {
+        border-right: none;
+        border-bottom: 2px solid #0f172a;
+      }
+      .score {
+        font-size: 40vh; /* 調整為 40vh，防止雙位數溢出 */
+      }
+    }
+
+    /* 橫屏設定 (Landscape) */
+    @media (orientation: landscape) {
+      main {
+        flex-direction: row;
+      }
+      .score {
+        font-size: 50vh; /* 保持 50vh */
+      }
     }
   </style>
 </head>
 <body>
 
-  <div class="app">
-    <header>
-      <div class="title">籃球比賽記分板</div>
-      <div class="nav-ctrls">
-        <button class="nav-btn" onclick="openSettings()">⚙️ 設定</button>
-        <button class="nav-btn" onclick="toggleFullScreen()">全螢幕</button>
-      </div>
-    </header>
+  <header>
+    <button class="btn" id="reset-btn">重置分數</button>
+    <div style="font-size: 14px; color: #94a3b8;">點擊加分 | 長按減分</div>
+  </header>
 
-    <section class="timer-box">
-      <div class="timer-text" id="timer">10:00</div>
-      <div class="timer-ctrls">
-        <button class="ctrl-btn btn-start" id="startBtn" onclick="toggleTimer()">開始</button>
-        <button class="ctrl-btn btn-reset" onclick="resetAll()">重置</button>
-      </div>
-    </section>
-
-    <section class="scoreboard">
-      <!-- 主隊 -->
-      <div class="team-col">
-        <div class="team-name name-home">主 隊</div>
-        <div class="score-display">
-          <div class="score-text score-home" id="homeScore">0</div>
-        </div>
-        <div class="btn-group">
-          <button class="btn-point" onclick="addScore('home', 3)">+3</button>
-          <button class="btn-point" onclick="addScore('home', 2)">+2</button>
-          <button class="btn-point" onclick="addScore('home', 1)">+1</button>
-          <button class="btn-point" style="color: var(--red);" onclick="addScore('home', -1)">-1</button>
-        </div>
-      </div>
-
-      <!-- 客隊 -->
-      <div class="team-col">
-        <div class="team-name name-guest">客 隊</div>
-        <div class="score-display">
-          <div class="score-text score-guest" id="guestScore">0</div>
-        </div>
-        <div class="btn-group">
-          <button class="btn-point" onclick="addScore('guest', 3)">+3</button>
-          <button class="btn-point" onclick="addScore('guest', 2)">+2</button>
-          <button class="btn-point" onclick="addScore('guest', 1)">+1</button>
-          <button class="btn-point" style="color: var(--blue);" onclick="addScore('guest', -1)">-1</button>
-        </div>
-      </div>
-    </section>
-  </div>
-
-  <!-- 設定對話視窗 -->
-  <div class="modal-overlay" id="settingModal">
-    <div class="modal-content">
-      <div class="modal-title">比賽與音效設定</div>
-      
-      <div class="setting-row">
-        <span>比賽時間 (分鐘)</span>
-        <div class="stepper">
-          <button class="step-btn" onclick="changeMinutes(-1)">-</button>
-          <span class="step-value" id="modalMinText">10</span>
-          <button class="step-btn" onclick="changeMinutes(1)">+</button>
-        </div>
-      </div>
-
-      <div class="setting-row">
-        <span>主開關 (音效與語音)</span>
-        <input type="checkbox" id="soundToggle" class="toggle-checkbox" checked>
-      </div>
-
-      <div class="setting-row">
-        <span>倒數聲響開始時間</span>
-        <select id="startChimeMin" class="setting-select">
-          <option value="1">倒數 1 分鐘內</option>
-          <option value="2">倒數 2 分鐘內</option>
-          <option value="3" selected>倒數 3 分鐘內</option>
-          <option value="5">倒數 5 分鐘內</option>
-        </select>
-      </div>
-
-      <div class="setting-row">
-        <span>每分鐘提示音效</span>
-        <div class="setting-right">
-          <select id="chimeType" class="setting-select">
-            <option value="chime" selected>雙音清脆聲</option>
-            <option value="beep">單音嗶聲</option>
-            <option value="woodblock">木魚重音</option>
-            <option value="chord">電子和弦音</option>
-          </select>
-          <button class="test-sound-btn" onclick="playMinuteAlert()">🔊 試聽</button>
-        </div>
-      </div>
-
-      <div class="setting-row">
-        <span>最後 10 秒倒數聲響</span>
-        <div class="setting-right">
-          <select id="countdownType" class="setting-select">
-            <option value="voice_zh" selected>繁體中文人聲</option>
-            <option value="voice_en">英文人聲 (English)</option>
-            <option value="beep">急促嗶聲 (Beep)</option>
-            <option value="pulse">心跳鼓聲 (Heartbeat)</option>
-          </select>
-          <button class="test-sound-btn" onclick="testCountdownSound()">🔊 試聽</button>
-        </div>
-      </div>
-
-      <div class="setting-row">
-        <span>時間到聲響</span>
-        <div class="setting-right">
-          <select id="endSoundType" class="setting-select">
-            <option value="boxing" selected>拳擊金屬鐘聲</option>
-            <option value="buzzer">傳統蜂鳴器聲</option>
-            <option value="horn">氣笛警報聲</option>
-            <option value="whistle">裁判哨音</option>
-          </select>
-          <button class="test-sound-btn" onclick="playEndSound()">🔊 試聽</button>
-        </div>
-      </div>
-
-      <button class="modal-save-btn" onclick="closeSettings()">儲存並重置</button>
+  <main>
+    <div class="team-card team-a" id="team-a">
+      <div class="score" id="score-a">0</div>
     </div>
-  </div>
+    <div class="team-card team-b" id="team-b">
+      <div class="score" id="score-b">0</div>
+    </div>
+  </main>
 
   <script>
-    let defaultMinutes = 10;
-    let totalSeconds = 600;
-    let timerInterval = null;
-    let isRunning = false;
-    let scores = { home: 0, guest: 0 };
-    let audioCtx = null;
+    // 快取名稱與靜態預快取清單
+    const CACHE_NAME = 'basketball-scoreboard-v1';
+    const CACHE_ASSETS = [
+      location.href,
+      location.pathname
+    ];
 
-    function initAudio() {
-      if (!audioCtx) {
-        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-      }
-      if (audioCtx.state === 'suspended') {
-        audioCtx.resume();
-      }
-    }
-
-    function playTone(freq, type, duration, vol = 0.3) {
-      if (!document.getElementById('soundToggle').checked) return;
-      initAudio();
-      try {
-        const osc = audioCtx.createOscillator();
-        const gain = audioCtx.createGain();
-        osc.type = type;
-        osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
-        gain.gain.setValueAtTime(vol, audioCtx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
-        osc.connect(gain);
-        gain.connect(audioCtx.destination);
-        osc.start();
-        osc.stop(audioCtx.currentTime + duration);
-      } catch(e){}
-    }
-
-    function playMinuteAlert() {
-      const type = document.getElementById('chimeType').value;
-      if (type === 'chime') {
-        playTone(600, 'sine', 0.2);
-        setTimeout(() => playTone(850, 'sine', 0.4), 180);
-      } else if (type === 'beep') {
-        playTone(800, 'square', 0.25);
-      } else if (type === 'woodblock') {
-        playTone(300, 'triangle', 0.15, 0.5);
-      } else if (type === 'chord') {
-        playTone(523.25, 'sine', 0.3);
-        setTimeout(() => playTone(659.25, 'sine', 0.3), 100);
-        setTimeout(() => playTone(783.99, 'sine', 0.5), 200);
-      }
-    }
-
-    function speakCountdown(num) {
-      if (!document.getElementById('soundToggle').checked) return;
-      const type = document.getElementById('countdownType').value;
-
-      if (type === 'voice_zh' || type === 'voice_en') {
-        if ('speechSynthesis' in window) {
-          window.speechSynthesis.cancel();
-          const msg = new SpeechSynthesisUtterance(String(num));
-          msg.lang = type === 'voice_zh' ? 'zh-TW' : 'en-US';
-          msg.rate = 1.2;
-          msg.volume = 1.0;
-          window.speechSynthesis.speak(msg);
-        } else {
-          playTone(750, 'square', 0.12);
+    // CacheStorage 靜態預快取邏輯
+    async function initOfflineCache() {
+      if ('caches' in window) {
+        try {
+          const cache = await caches.open(CACHE_NAME);
+          await cache.addAll(CACHE_ASSETS);
+        } catch (err) {
+          console.error('CacheStorage 預快取失敗:', err);
         }
-      } else if (type === 'beep') {
-        playTone(850, 'square', 0.1);
-      } else if (type === 'pulse') {
-        playTone(120, 'triangle', 0.2, 0.6);
       }
     }
 
-    function testCountdownSound() {
-      initAudio();
-      speakCountdown(10);
+    // 初始化計分與事件處理
+    let scoreA = 0;
+    let scoreB = 0;
+
+    const elScoreA = document.getElementById('score-a');
+    const elScoreB = document.getElementById('score-b');
+    const elTeamA = document.getElementById('team-a');
+    const elTeamB = document.getElementById('team-b');
+    const btnReset = document.getElementById('reset-btn');
+
+    function updateDisplay() {
+      elScoreA.textContent = scoreA;
+      elScoreB.textContent = scoreB;
     }
 
-    function playEndSound() {
-      if (!document.getElementById('soundToggle').checked) return;
-      initAudio();
-      const type = document.getElementById('endSoundType').value;
+    // 長按觸發扣分邏輯
+    function attachScoreEvents(element, getScore, setScore) {
+      let timer = null;
+      let isLongPress = false;
 
-      if (type === 'boxing') {
-        for (let i = 0; i < 3; i++) {
-          setTimeout(() => playTone(440, 'sine', 1.2, 0.6), i * 350);
-        }
-      } else if (type === 'buzzer') {
-        playTone(180, 'sawtooth', 2.0, 0.7);
-      } else if (type === 'horn') {
-        playTone(320, 'sawtooth', 1.8, 0.8);
-        playTone(240, 'sawtooth', 1.8, 0.8);
-      } else if (type === 'whistle') {
-        playTone(2800, 'sine', 1.2, 0.6);
-      }
-    }
-
-    function updateTimerDisplay() {
-      const minutes = Math.floor(totalSeconds / 60);
-      const seconds = totalSeconds % 60;
-      document.getElementById('timer').innerText = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
-    }
-
-    function toggleTimer() {
-      initAudio();
-      const startBtn = document.getElementById('startBtn');
-      if (isRunning) {
-        clearInterval(timerInterval);
-        isRunning = false;
-        startBtn.innerText = '開始';
-        startBtn.style.backgroundColor = 'var(--green)';
-      } else {
-        if (totalSeconds <= 0) return;
-        isRunning = true;
-        startBtn.innerText = '暫停';
-        startBtn.style.backgroundColor = '#ff9500';
-        
-        timerInterval = setInterval(() => {
-          if (totalSeconds > 0) {
-            totalSeconds--;
-            updateTimerDisplay();
-
-            const startChimeMin = parseInt(document.getElementById('startChimeMin').value);
-            const minutesLeft = totalSeconds / 60;
-
-            if (totalSeconds > 10 && totalSeconds % 60 === 0 && minutesLeft <= startChimeMin) {
-              playMinuteAlert();
-            } else if (totalSeconds <= 10 && totalSeconds > 0) {
-              speakCountdown(totalSeconds);
-            } else if (totalSeconds === 0) {
-              playEndSound();
-            }
-          } else {
-            clearInterval(timerInterval);
-            isRunning = false;
-            startBtn.innerText = '開始';
-            startBtn.style.backgroundColor = 'var(--green)';
+      element.addEventListener('touchstart', (e) => {
+        isLongPress = false;
+        timer = setTimeout(() => {
+          isLongPress = true;
+          const current = getScore();
+          if (current > 0) {
+            setScore(current - 1);
+            updateDisplay();
           }
-        }, 1000);
-      }
-    }
+        }, 600);
+      }, { passive: true });
 
-    function resetAll() {
-      if (isRunning) toggleTimer();
-      totalSeconds = defaultMinutes * 60;
-      updateTimerDisplay();
-      
-      scores.home = 0;
-      scores.guest = 0;
-      document.getElementById('homeScore').innerText = 0;
-      document.getElementById('guestScore').innerText = 0;
-    }
-
-    function addScore(team, points) {
-      initAudio();
-      scores[team] = Math.max(0, scores[team] + points);
-      document.getElementById(`${team}Score`).innerText = scores[team];
-    }
-
-    function openSettings() {
-      if (isRunning) toggleTimer();
-      document.getElementById('modalMinText').innerText = defaultMinutes;
-      document.getElementById('settingModal').style.display = 'flex';
-    }
-
-    function closeSettings() {
-      document.getElementById('settingModal').style.display = 'none';
-      resetAll();
-    }
-
-    function changeMinutes(delta) {
-      defaultMinutes = Math.max(1, Math.min(99, defaultMinutes + delta));
-      document.getElementById('modalMinText').innerText = defaultMinutes;
-    }
-
-    function toggleFullScreen() {
-      const elem = document.documentElement;
-      if (!document.fullscreenElement && !document.webkitFullscreenElement) {
-        if (elem.requestFullscreen) {
-          elem.requestFullscreen();
-        } else if (elem.webkitRequestFullscreen) {
-          elem.webkitRequestFullscreen();
+      element.addEventListener('touchend', (e) => {
+        clearTimeout(timer);
+        if (!isLongPress) {
+          setScore(getScore() + 1);
+          updateDisplay();
         }
-      } else {
-        if (document.exitFullscreen) {
-          document.exitFullscreen();
-        } else if (document.webkitExitFullscreen) {
-          document.webkitExitFullscreen();
+      });
+
+      element.addEventListener('touchmove', () => {
+        clearTimeout(timer);
+      }, { passive: true });
+
+      element.addEventListener('click', (e) => {
+        // 防止案案在桌面端與觸控端重複觸發
+        if (e.pointerType === 'mouse') {
+          setScore(getScore() + 1);
+          updateDisplay();
         }
-      }
-    }
-
-    document.addEventListener('touchstart', function(event) {
-      if (event.touches.length > 1) {
-        event.preventDefault();
-      }
-    }, { passive: false });
-
-    // iOS 離線自動快取頁面本體 (CacheStorage 靜態儲存)
-    if ('caches' in window) {
-      caches.open('scoreboard-v2').then(cache => {
-        cache.add(window.location.href).catch(() => {});
       });
     }
+
+    attachScoreEvents(elTeamA, () => scoreA, (v) => scoreA = v);
+    attachScoreEvents(elTeamB, () => scoreB, (v) => scoreB = v);
+
+    btnReset.addEventListener('click', () => {
+      scoreA = 0;
+      scoreB = 0;
+      updateDisplay();
+    });
+
+    // 頁面載入完成後執行離線快取註冊
+    window.addEventListener('load', () => {
+      initOfflineCache();
+    });
   </script>
 </body>
 </html>
