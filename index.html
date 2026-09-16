@@ -3,6 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <!-- Safari PWA 全螢幕設定 -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="籃球記分板">
   <title>籃球記分板</title>
   <style>
     :root {
@@ -43,9 +47,9 @@
       height: 100dvh;
     }
 
-    /* 1. 頂導覽 (固定 36px) */
+    /* 頂部導覽列 */
     header {
-      height: 36px;
+      height: 40px;
       background-color: #111111;
       display: flex;
       justify-content: space-between;
@@ -75,19 +79,19 @@
       cursor: pointer;
     }
 
-    /* 2. 計時區 (高度壓縮至最低) */
+    /* 計時區 */
     .timer-section {
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      padding: 6px 0;
+      padding: 4px 0;
       flex-shrink: 0;
     }
 
     .timer-display {
       font-family: "SF Pro Text", "Courier New", monospace;
-      font-size: 14vh;
+      font-size: 13vh;
       font-weight: 800;
       color: var(--primary-yellow);
       line-height: 1;
@@ -101,7 +105,7 @@
 
     .ctrl-btn {
       width: 90px;
-      height: 32px;
+      height: 34px;
       border: none;
       border-radius: 6px;
       font-size: 1rem;
@@ -110,7 +114,7 @@
       cursor: pointer;
     }
 
-    /* 3. 記分主區 (固定左右 50% 並排，自動撐滿高) */
+    /* 記分主區 (雙欄並排) */
     .scoreboard {
       flex: 1;
       display: flex;
@@ -126,6 +130,7 @@
       flex-direction: column;
       height: 100%;
       min-height: 0;
+      width: 50%;
     }
 
     .team-name {
@@ -139,7 +144,7 @@
     .home-title { color: var(--home-red); }
     .guest-title { color: var(--guest-blue); }
 
-    /* 巨大分數框：以 vh 精準控制字體大小 */
+    /* 分數顯示框 */
     .score-box {
       flex: 1;
       background-color: #000000;
@@ -154,7 +159,7 @@
     }
 
     .score-number {
-      font-size: 35vh;
+      font-size: 32vh;
       font-weight: 800;
       line-height: 1;
     }
@@ -162,10 +167,12 @@
     .home-score { color: var(--home-red); }
     .guest-score { color: var(--guest-blue); }
 
-    /* 4. 底部加減按鈕 (固定高度 52px 絕對貼底) */
+    /* 底部加減按鈕列 (修正按鈕顯示與彈性擠壓) */
     .score-controls {
-      display: flex;
-      height: 52px;
+      display: flex !important;
+      flex-direction: row !important;
+      width: 100%;
+      height: 54px;
       background-color: var(--btn-bg);
       border: 1px solid var(--border-color);
       border-radius: 8px;
@@ -174,7 +181,9 @@
     }
 
     .score-btn {
-      flex: 1;
+      flex: 1 1 25% !important;
+      width: 25%;
+      height: 100%;
       background: transparent;
       border: none;
       border-right: 1px solid #111111;
@@ -203,7 +212,7 @@
       <div class="app-title">籃球記分板</div>
       <div class="nav-buttons">
         <button class="nav-btn" onclick="toggleFullScreen()">全螢幕</button>
-        <button class="nav-btn" onclick="alert('設定功能開發中')">⚙ 設定</button>
+        <button class="nav-btn" onclick="resetAll()">全重置</button>
       </div>
     </header>
 
@@ -211,16 +220,16 @@
       <div class="timer-display" id="timer">10:00</div>
       <div class="timer-controls">
         <button class="ctrl-btn btn-start" id="startBtn" onclick="toggleTimer()">開始</button>
-        <button class="ctrl-btn btn-reset" onclick="resetTimer()">重置</button>
+        <button class="ctrl-btn btn-reset" onclick="resetTimer()">重置計時</button>
       </div>
     </section>
 
     <section class="scoreboard">
-      <!-- 主隊 (左) -->
+      <!-- 主隊 -->
       <div class="team-card">
         <div class="team-name home-title">主隊</div>
         <div class="score-box">
-          <div class="score-number home-score" id="homeScore">99</div>
+          <div class="score-number home-score" id="homeScore">0</div>
         </div>
         <div class="score-controls">
           <button class="score-btn" onclick="addScore('home', 3)">3</button>
@@ -230,11 +239,11 @@
         </div>
       </div>
 
-      <!-- 客隊 (右) -->
+      <!-- 客隊 -->
       <div class="team-card">
         <div class="team-name guest-title">客隊</div>
         <div class="score-box">
-          <div class="score-number guest-score" id="guestScore">88</div>
+          <div class="score-number guest-score" id="guestScore">0</div>
         </div>
         <div class="score-controls">
           <button class="score-btn" onclick="addScore('guest', 3)">3</button>
@@ -250,6 +259,7 @@
     let totalSeconds = 600;
     let timerInterval = null;
     let isRunning = false;
+    let scores = { home: 0, guest: 0 };
 
     function updateTimerDisplay() {
       const minutes = Math.floor(totalSeconds / 60);
@@ -289,7 +299,13 @@
       updateTimerDisplay();
     }
 
-    let scores = { home: 99, guest: 88 };
+    function resetAll() {
+      resetTimer();
+      scores.home = 0;
+      scores.guest = 0;
+      document.getElementById('homeScore').innerText = 0;
+      document.getElementById('guestScore').innerText = 0;
+    }
 
     function addScore(team, points) {
       scores[team] = Math.max(0, scores[team] + points);
@@ -297,11 +313,18 @@
     }
 
     function toggleFullScreen() {
-      if (!document.fullscreenElement) {
-        document.documentElement.requestFullscreen().catch(err => {});
+      const elem = document.documentElement;
+      if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+        if (elem.requestFullscreen) {
+          elem.requestFullscreen();
+        } else if (elem.webkitRequestFullscreen) {
+          elem.webkitRequestFullscreen();
+        }
       } else {
         if (document.exitFullscreen) {
           document.exitFullscreen();
+        } else if (document.webkitExitFullscreen) {
+          document.webkitExitFullscreen();
         }
       }
     }
