@@ -138,7 +138,7 @@
     .name-home { color: var(--red); }
     .name-guest { color: var(--blue); }
 
-    /* 分數大框 */
+    /* 分數大框 (保留位置與外框) */
     .score-display {
       flex: 1;
       background: #000;
@@ -467,7 +467,6 @@
       } catch(e){}
     }
 
-    // 1. 每分鐘提醒聲選項
     function playMinuteAlert() {
       const type = document.getElementById('chimeType').value;
       if (type === 'chime') {
@@ -484,7 +483,6 @@
       }
     }
 
-    // 2. 最後 10 秒倒數聲音處理
     function speakCountdown(num) {
       if (!document.getElementById('soundToggle').checked) return;
       const type = document.getElementById('countdownType').value;
@@ -512,7 +510,6 @@
       speakCountdown(10);
     }
 
-    // 3. 時間到聲響選項
     function playEndSound() {
       if (!document.getElementById('soundToggle').checked) return;
       initAudio();
@@ -633,24 +630,11 @@
       }
     }, { passive: false });
 
-    if ('serviceWorker' in navigator) {
-      const swCode = `
-        const CACHE_NAME = 'scoreboard-v1';
-        self.addEventListener('install', e => {
-          self.skipWaiting();
-        });
-        self.addEventListener('activate', e => {
-          self.clients.claim();
-        });
-        self.addEventListener('fetch', e => {
-          e.respondWith(
-            fetch(e.request).catch(() => caches.match(e.request))
-          );
-        });
-      `;
-      const blob = new Blob([swCode], { type: 'application/javascript' });
-      const swUrl = URL.createObjectURL(blob);
-      navigator.serviceWorker.register(swUrl).catch(() => {});
+    // iOS 離線自動快取頁面本體 (CacheStorage 靜態儲存)
+    if ('caches' in window) {
+      caches.open('scoreboard-v2').then(cache => {
+        cache.add(window.location.href).catch(() => {});
+      });
     }
   </script>
 </body>
