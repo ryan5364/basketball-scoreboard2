@@ -3,7 +3,6 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <!-- Safari PWA 全螢幕設定 -->
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="籃球記分板">
@@ -49,7 +48,7 @@
 
     /* 頂部導覽列 */
     header {
-      height: 40px;
+      height: 38px;
       background-color: #111111;
       display: flex;
       justify-content: space-between;
@@ -64,34 +63,30 @@
       font-weight: bold;
     }
 
-    .nav-buttons {
-      display: flex;
-      gap: 10px;
-    }
-
     .nav-btn {
       background-color: var(--btn-bg);
       border: 1px solid #444444;
       color: #ffffff;
-      padding: 4px 12px;
+      padding: 4px 14px;
       border-radius: 6px;
       font-size: 0.85rem;
+      font-weight: bold;
       cursor: pointer;
     }
 
-    /* 計時區 */
+    /* 計時區 (極致壓縮垂直空間) */
     .timer-section {
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      padding: 4px 0;
+      padding: 2px 0 6px 0;
       flex-shrink: 0;
     }
 
     .timer-display {
       font-family: "SF Pro Text", "Courier New", monospace;
-      font-size: 13vh;
+      font-size: 11vh;
       font-weight: 800;
       color: var(--primary-yellow);
       line-height: 1;
@@ -99,13 +94,13 @@
 
     .timer-controls {
       display: flex;
-      gap: 12px;
+      gap: 16px;
       margin-top: 4px;
     }
 
     .ctrl-btn {
-      width: 90px;
-      height: 34px;
+      width: 95px;
+      height: 36px;
       border: none;
       border-radius: 6px;
       font-size: 1rem;
@@ -114,13 +109,13 @@
       cursor: pointer;
     }
 
-    /* 記分主區 (雙欄並排) */
+    /* 記分主區 (雙欄獨立) */
     .scoreboard {
       flex: 1;
       display: flex;
       flex-direction: row;
       gap: 16px;
-      padding: 0 16px 12px 16px;
+      padding: 0 16px 16px 16px;
       min-height: 0;
     }
 
@@ -134,7 +129,7 @@
     }
 
     .team-name {
-      font-size: 1.4rem;
+      font-size: 1.3rem;
       font-weight: bold;
       text-align: center;
       margin-bottom: 4px;
@@ -144,7 +139,7 @@
     .home-title { color: var(--home-red); }
     .guest-title { color: var(--guest-blue); }
 
-    /* 分數顯示框 */
+    /* 分數框：緊湊滿版設計 */
     .score-box {
       flex: 1;
       background-color: #000000;
@@ -153,13 +148,14 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      margin-bottom: 8px;
+      margin-bottom: 12px;
       min-height: 0;
       overflow: hidden;
+      container-type: size; /* 讓內部文字精準依照容器大小伸縮 */
     }
 
     .score-number {
-      font-size: 32vh;
+      font-size: 68cqh; /* 自動塞滿 68% 的黑框垂直高度 */
       font-weight: 800;
       line-height: 1;
     }
@@ -167,28 +163,22 @@
     .home-score { color: var(--home-red); }
     .guest-score { color: var(--guest-blue); }
 
-    /* 底部加減按鈕列 (修正按鈕顯示與彈性擠壓) */
+    /* 3, 2, 1, -1 按鈕區 (顯著加大高度至 75px，增加手感與間距) */
     .score-controls {
-      display: flex !important;
-      flex-direction: row !important;
-      width: 100%;
-      height: 54px;
-      background-color: var(--btn-bg);
-      border: 1px solid var(--border-color);
-      border-radius: 8px;
-      overflow: hidden;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      height: 75px;
       flex-shrink: 0;
+      width: 100%;
     }
 
     .score-btn {
-      flex: 1 1 25% !important;
-      width: 25%;
-      height: 100%;
-      background: transparent;
-      border: none;
-      border-right: 1px solid #111111;
+      background-color: var(--btn-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
       color: #ffffff;
-      font-size: 1.8rem;
+      font-size: 2rem;
       font-weight: bold;
       cursor: pointer;
       display: flex;
@@ -196,13 +186,13 @@
       justify-content: center;
     }
 
-    .score-btn:last-child {
-      border-right: none;
-    }
-
     .btn-start { background-color: var(--green-btn); }
     .btn-reset { background-color: var(--red-btn); }
-    .score-btn:active, .ctrl-btn:active, .nav-btn:active { opacity: 0.6; }
+    
+    .score-btn:active, .ctrl-btn:active, .nav-btn:active { 
+      opacity: 0.5;
+      transform: scale(0.97);
+    }
   </style>
 </head>
 <body>
@@ -210,17 +200,14 @@
   <div class="app-container">
     <header>
       <div class="app-title">籃球記分板</div>
-      <div class="nav-buttons">
-        <button class="nav-btn" onclick="toggleFullScreen()">全螢幕</button>
-        <button class="nav-btn" onclick="resetAll()">全重置</button>
-      </div>
+      <button class="nav-btn" onclick="toggleFullScreen()">全螢幕</button>
     </header>
 
     <section class="timer-section">
       <div class="timer-display" id="timer">10:00</div>
       <div class="timer-controls">
         <button class="ctrl-btn btn-start" id="startBtn" onclick="toggleTimer()">開始</button>
-        <button class="ctrl-btn btn-reset" onclick="resetTimer()">重置計時</button>
+        <button class="ctrl-btn btn-reset" onclick="resetAll()">重置</button>
       </div>
     </section>
 
@@ -293,14 +280,12 @@
       }
     }
 
-    function resetTimer() {
+    /* 集中單一重置按鈕：同時重置時間與分數 */
+    function resetAll() {
       if (isRunning) toggleTimer();
       totalSeconds = 600;
       updateTimerDisplay();
-    }
-
-    function resetAll() {
-      resetTimer();
+      
       scores.home = 0;
       scores.guest = 0;
       document.getElementById('homeScore').innerText = 0;
