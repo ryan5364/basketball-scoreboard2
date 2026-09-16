@@ -18,6 +18,7 @@
       --guest-blue: #0a84ff;
       --green-btn: #34c759;
       --red-btn: #ff3b30;
+      --orange-btn: #ff9500;
     }
 
     * {
@@ -45,11 +46,11 @@
       height: 100vh;
       height: 100dvh;
       padding-bottom: env(safe-area-inset-bottom);
+      position: relative;
     }
 
-    /* Minimal Top Navigation Header */
     header {
-      height: 38px;
+      height: 44px;
       background-color: #111111;
       display: flex;
       justify-content: space-between;
@@ -65,29 +66,35 @@
       font-weight: bold;
     }
 
+    .header-actions {
+      display: flex;
+      gap: 10px;
+    }
+
     .nav-btn {
       background-color: var(--btn-bg);
       border: 1px solid #444444;
       color: #ffffff;
-      padding: 4px 14px;
+      padding: 6px 14px;
       border-radius: 6px;
       font-size: 0.85rem;
       font-weight: bold;
       cursor: pointer;
     }
 
+    /* 計時區塊 */
     .timer-section {
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      padding: 4px 0 8px 0;
+      padding: 8px 0;
       flex-shrink: 0;
     }
 
     .timer-display {
       font-family: "SF Pro Text", "Courier New", monospace;
-      font-size: clamp(3.2rem, 11vh, 5.5rem);
+      font-size: clamp(4.5rem, 14vh, 7.5rem);
       font-weight: 800;
       color: var(--primary-yellow);
       line-height: 1;
@@ -97,26 +104,30 @@
     .timer-controls {
       display: flex;
       gap: 16px;
-      margin-top: 6px;
+      margin-top: 8px;
     }
 
     .ctrl-btn {
-      width: 105px;
-      height: 42px;
+      width: 120px;
+      height: 46px;
       border: none;
       border-radius: 8px;
-      font-size: 1.1rem;
+      font-size: 1.2rem;
       font-weight: bold;
       color: #ffffff;
       cursor: pointer;
       box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
     }
 
+    .btn-start { background-color: var(--green-btn); }
+    .btn-reset { background-color: var(--red-btn); }
+
+    /* 雙隊記分板區：主客隊分離明顯 */
     .scoreboard {
       flex: 1;
       display: flex;
       flex-direction: row;
-      gap: 28px; /* Clear 28px gap separating Home and Guest buttons */
+      gap: 32px; /* 32px 寬間距，徹底分開主隊 -1 與客隊 3 按鈕 */
       padding: 0 20px 16px 20px;
       min-height: 0;
     }
@@ -127,7 +138,7 @@
       flex-direction: column;
       height: 100%;
       min-height: 0;
-      width: 50%;
+      width: calc(50% - 16px);
     }
 
     .team-name {
@@ -141,7 +152,6 @@
     .home-title { color: var(--home-red); }
     .guest-title { color: var(--guest-blue); }
 
-    /* SVG based score container ensures 100% responsive large score text without clipping */
     .score-box {
       flex: 1;
       background-color: #000000;
@@ -172,21 +182,22 @@
     .home-svg-text { fill: var(--home-red); }
     .guest-svg-text { fill: var(--guest-blue); }
 
+    /* 加強加分按鈕高度與字體大小 */
     .score-controls {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
       gap: 10px;
-      height: clamp(65px, 11vh, 88px);
+      height: clamp(75px, 14vh, 105px);
       flex-shrink: 0;
       width: 100%;
     }
 
     .score-btn {
       background-color: var(--btn-bg);
-      border: 1px solid var(--border-color);
+      border: 1px solid #444444;
       border-radius: 10px;
       color: #ffffff;
-      font-size: clamp(1.6rem, 3.5vw, 2.3rem);
+      font-size: clamp(2rem, 4vw, 2.8rem);
       font-weight: bold;
       cursor: pointer;
       display: flex;
@@ -195,12 +206,135 @@
       box-shadow: 0 4px 6px rgba(0,0,0,0.3);
     }
 
-    .btn-start { background-color: var(--green-btn); }
-    .btn-reset { background-color: var(--red-btn); }
-    
     .score-btn:active, .ctrl-btn:active, .nav-btn:active { 
       opacity: 0.6;
       transform: scale(0.96);
+    }
+
+    /* 設置對話框 (Modal View) */
+    .modal-backdrop {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background-color: rgba(0, 0, 0, 0.75);
+      backdrop-filter: blur(4px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s ease;
+    }
+
+    .modal-backdrop.active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .setting-modal {
+      background-color: #1a1a1a;
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      width: 90%;
+      max-width: 420px;
+      padding: 24px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.8);
+    }
+
+    .modal-title {
+      font-size: 1.3rem;
+      font-weight: bold;
+      color: var(--primary-yellow);
+      margin-bottom: 20px;
+      text-align: center;
+    }
+
+    .setting-group {
+      margin-bottom: 20px;
+    }
+
+    .setting-label {
+      font-size: 0.95rem;
+      color: #aaaaaa;
+      margin-bottom: 8px;
+      display: block;
+    }
+
+    .stepper-container {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background-color: #111111;
+      border: 1px solid #333333;
+      border-radius: 10px;
+      padding: 6px;
+    }
+
+    .step-btn {
+      width: 44px;
+      height: 44px;
+      background-color: var(--btn-bg);
+      border: 1px solid #444444;
+      border-radius: 8px;
+      color: #ffffff;
+      font-size: 1.4rem;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .stepper-value {
+      font-size: 1.3rem;
+      font-weight: bold;
+      color: #ffffff;
+      width: 80px;
+      text-align: center;
+      font-family: monospace;
+    }
+
+    .toggle-container {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background-color: #111111;
+      border: 1px solid #333333;
+      border-radius: 10px;
+      padding: 10px 14px;
+    }
+
+    .toggle-btn {
+      padding: 8px 16px;
+      border-radius: 6px;
+      border: 1px solid #444444;
+      background-color: var(--btn-bg);
+      color: #ffffff;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .toggle-btn.active {
+      background-color: var(--green-btn);
+      border-color: var(--green-btn);
+    }
+
+    .modal-footer {
+      display: flex;
+      justify-content: flex-end;
+      margin-top: 24px;
+    }
+
+    .save-btn {
+      width: 100%;
+      height: 44px;
+      background-color: var(--guest-blue);
+      border: none;
+      border-radius: 8px;
+      color: #ffffff;
+      font-size: 1rem;
+      font-weight: bold;
+      cursor: pointer;
     }
   </style>
 </head>
@@ -209,10 +343,13 @@
   <div class="app-container">
     <header>
       <div class="app-title">籃球記分板</div>
-      <button class="nav-btn" onclick="toggleFullScreen()">全螢幕</button>
+      <div class="header-actions">
+        <button class="nav-btn" onclick="openSettings()">設置</button>
+        <button class="nav-btn" onclick="toggleFullScreen()">全螢幕</button>
+      </div>
     </header>
 
-    <!-- Timer Area -->
+    <!-- 計時控制區 -->
     <section class="timer-section">
       <div class="timer-display" id="timer">10:00</div>
       <div class="timer-controls">
@@ -221,9 +358,9 @@
       </div>
     </section>
 
-    <!-- Scoreboard Grid -->
+    <!-- 雙隊記分板區 -->
     <section class="scoreboard">
-      <!-- Home Team Column -->
+      <!-- 主隊區塊 -->
       <div class="team-card">
         <div class="team-name home-title">主隊</div>
         <div class="score-box">
@@ -234,12 +371,12 @@
         <div class="score-controls">
           <button class="score-btn" onclick="addScore('home', 3)">3</button>
           <button class="score-btn" onclick="addScore('home', 2)">2</button>
-          <button class="score-btn" onclick="addScore('scoreHome', 1)" onclick="addScore('home', 1)">1</button>
+          <button class="score-btn" onclick="addScore('home', 1)">1</button>
           <button class="score-btn" onclick="addScore('home', -1)">-1</button>
         </div>
       </div>
 
-      <!-- Guest Team Column -->
+      <!-- 客隊區塊 -->
       <div class="team-card">
         <div class="team-name guest-title">客隊</div>
         <div class="score-box">
@@ -255,13 +392,74 @@
         </div>
       </div>
     </section>
+
+    <!-- 設置對話框 -->
+    <div class="modal-backdrop" id="settingModal">
+      <div class="setting-modal">
+        <div class="modal-title">比賽與音效設置</div>
+        
+        <div class="setting-group">
+          <label class="setting-label">比賽時間（分鐘）</label>
+          <div class="stepper-container">
+            <button class="step-btn" onclick="adjustTime(-1)">-</button>
+            <span class="stepper-value" id="minutesVal">10 分</span>
+            <button class="step-btn" onclick="adjustTime(1)">+</button>
+          </div>
+        </div>
+
+        <div class="setting-group">
+          <label class="setting-label">結束蜂鳴器</label>
+          <div class="toggle-container">
+            <span>比賽結束音效</span>
+            <button class="toggle-btn active" id="soundToggleBtn" onclick="toggleSoundSetting()">已開啟</button>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button class="save-btn" onclick="closeSettings()">確定</button>
+        </div>
+      </div>
+    </div>
   </div>
 
   <script>
+    let defaultMinutes = 10;
     let totalSeconds = 600;
     let timerInterval = null;
     let isRunning = false;
+    let soundEnabled = true;
     let scores = { home: 0, guest: 0 };
+    let audioCtx = null;
+
+    function playBuzzer() {
+      if (!soundEnabled) return;
+      try {
+        if (!audioCtx) {
+          audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+        if (audioCtx.state === 'suspended') {
+          audioCtx.resume();
+        }
+
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(440, audioCtx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(320, audioCtx.currentTime + 1.2);
+
+        gain.gain.setValueAtTime(0.35, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 1.2);
+
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+
+        osc.start();
+        osc.stop(audioCtx.currentTime + 1.2);
+      } catch (e) {
+        console.error("Audio playback error", e);
+      }
+    }
 
     function updateTimerDisplay() {
       const minutes = Math.floor(totalSeconds / 60);
@@ -271,6 +469,11 @@
 
     function toggleTimer() {
       const startBtn = document.getElementById('startBtn');
+      
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+
       if (isRunning) {
         clearInterval(timerInterval);
         isRunning = false;
@@ -280,7 +483,8 @@
         if (totalSeconds <= 0) return;
         isRunning = true;
         startBtn.innerText = '暫停';
-        startBtn.style.backgroundColor = '#ff9500';
+        startBtn.style.backgroundColor = 'var(--orange-btn)';
+        
         timerInterval = setInterval(() => {
           if (totalSeconds > 0) {
             totalSeconds--;
@@ -290,15 +494,15 @@
             isRunning = false;
             startBtn.innerText = '開始';
             startBtn.style.backgroundColor = 'var(--green-btn)';
+            playBuzzer();
           }
         }, 1000);
       }
     }
 
-    /* Single Red Reset Button: resets both countdown timer and scores */
     function resetAll() {
       if (isRunning) toggleTimer();
-      totalSeconds = 600;
+      totalSeconds = defaultMinutes * 60;
       updateTimerDisplay();
       
       scores.home = 0;
@@ -310,6 +514,35 @@
     function addScore(team, points) {
       scores[team] = Math.max(0, scores[team] + points);
       document.getElementById(`${team}Score`).textContent = scores[team];
+    }
+
+    /* 獨立設置畫面控制 */
+    function openSettings() {
+      if (isRunning) toggleTimer();
+      document.getElementById('settingModal').classList.add('active');
+    }
+
+    function closeSettings() {
+      document.getElementById('settingModal').classList.remove('active');
+    }
+
+    function adjustTime(delta) {
+      defaultMinutes = Math.max(1, defaultMinutes + delta);
+      document.getElementById('minutesVal').innerText = `${defaultMinutes} 分`;
+      totalSeconds = defaultMinutes * 60;
+      updateTimerDisplay();
+    }
+
+    function toggleSoundSetting() {
+      soundEnabled = !soundEnabled;
+      const btn = document.getElementById('soundToggleBtn');
+      if (soundEnabled) {
+        btn.innerText = '已開啟';
+        btn.classList.add('active');
+      } else {
+        btn.innerText = '已關閉';
+        btn.classList.remove('active');
+      }
     }
 
     function toggleFullScreen() {
@@ -329,7 +562,6 @@
       }
     }
 
-    // Prevent iOS double tap & multi-finger pinch zoom
     document.addEventListener('touchstart', function(event) {
       if (event.touches.length > 1) {
         event.preventDefault();
